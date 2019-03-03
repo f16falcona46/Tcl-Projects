@@ -2,6 +2,7 @@ package require fcgi
 package require sqlite3
 package require rest
 package require http
+package require Thread
 
 set curdir [file dirname [info script]]
 
@@ -20,6 +21,12 @@ clientsDb eval {CREATE TABLE IF NOT EXISTS Clients (Id INTEGER NOT NULL UNIQUE, 
 #END CalHacks 2018
 #Hacktech 2019
 proc do_nothing_callback {} {}
+set thread_job {
+	http::geturl "http://127.0.0.1:8080$request_str"
+	thread::wait
+}
+set background_t [thread::create -preserved]
+thread::send $background_t {package require http}
 #END Hacktech 2019
 
 while {1} {
@@ -121,7 +128,8 @@ while {1} {
 		append C "text/html"
 		append C "\r\n\r\n"
 		
-		http::geturl "http://localhost:8080$request_str" -command do_nothing_callback
+		thread::send -async $background_t "set request_str {$request_str}"
+		thread::send -async $background_t $thread_job
 		#END Hacktech 2019
 	} else {
 		set C "Status: 200 OK\n"
