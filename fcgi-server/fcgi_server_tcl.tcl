@@ -1,6 +1,7 @@
 package require fcgi
 package require sqlite3
 package require rest
+package require http
 
 set curdir [file dirname [info script]]
 
@@ -17,6 +18,9 @@ set templates [dict create]
 sqlite3 clientsDb [file join $curdir "clients.db"]
 clientsDb eval {CREATE TABLE IF NOT EXISTS Clients (Id INTEGER NOT NULL UNIQUE, DoorOpen INTEGER, PRIMARY KEY(Id));}
 #END CalHacks 2018
+#Hacktech 2019
+proc do_nothing_callback {} {}
+#END Hacktech 2019
 
 while {1} {
 	fcgi Accept_r $req
@@ -110,6 +114,15 @@ while {1} {
 			append C "Parameter action is missing."
 		}
 		#END CalHacks 2018
+	} elseif {$webapp eq "hacktech2019.cgi"} {
+		#Hacktech 2019
+		set C "Status: 200 OK\n"
+		append C "Content-Type: "
+		append C "text/html"
+		append C "\r\n\r\n"
+		
+		http::geturl "localhost:8080$request_str" -command do_nothing_callback
+		#END Hacktech 2019
 	} else {
 		set C "Status: 200 OK\n"
 		append C "Invalid query. Query: "
