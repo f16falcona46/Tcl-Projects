@@ -27,6 +27,7 @@ set thread_job {
 }
 set background_t [thread::create -preserved]
 thread::send $background_t {package require http}
+sqlite3 sound_sensorsDb [file join $curdir "sound_sensors.db"]
 #END Hacktech 2019
 
 while {1} {
@@ -128,8 +129,19 @@ while {1} {
 		append C "text/html"
 		append C "\r\n\r\n"
 		
+		append C "$request_str"
 		thread::send -async $background_t "set request_str {$request_str}"
 		thread::send -async $background_t $thread_job
+	} elseif {$webapp eq "hacktech2019_return.cgi"} {
+		set C "Status: 200 OK\n"
+		append C "Content-Type: "
+		append C "text/html"
+		append C "\r\n\r\n"
+		
+		set db_response [sound_sensorsDb eval {SELECT Lat, Lon FROM Events ORDER BY T DESC LIMIT 1;}]
+		append C [lindex $db_response 0]
+		append C ","
+		append C [lindex $db_response 1]
 		#END Hacktech 2019
 	} else {
 		set C "Status: 200 OK\n"
