@@ -121,7 +121,7 @@ while {1} {
 		append C "text/html"
 		append C "\r\n\r\n"
 		
-		http::geturl "localhost:8080$request_str" -command do_nothing_callback
+		http::geturl "http://localhost:8080$request_str" -command do_nothing_callback
 		#END Hacktech 2019
 	} else {
 		set C "Status: 200 OK\n"
